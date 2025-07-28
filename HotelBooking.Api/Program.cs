@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using HotelBooking.Application.DTOs.Auth;
+using HotelBooking.Application.Interfaces;
+using HotelBooking.Infrastructure.Services;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,7 +51,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
-
+builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 //builder.Services.AddOpenApi();
@@ -88,7 +92,28 @@ app.MapPost("api/auth/register", async (UserManager<User> userManager, RegisterU
     return Results.BadRequest(result.Errors);
 });
 
-// TODO: Add login endpoint
+app.MapPost("api/auth/login", async (UserManager<User> userManager, ITokenService tokenService, LoginUserDto loginUserDto) =>
+{
+    var user = await userManager.FindByEmailAsync(loginUserDto.Email);
+    if (user == null || !await userManager.CheckPasswordAsync(user, loginUserDto.Password))
+    {
+        return Results.Unauthorized();
+    }
+
+    if (user.Email is null)
+    {
+        return Results.BadRequest("User email is missing.");
+    }
+
+    var claims = new List<Claim>
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+        new Claim(JwtRegisteredClaimNames.Email, user.Email),
+    };
+
+    var token = tokenService.CreateToken(claims);
+    return Results.Ok(new { Token = token });
+});
 
 
 app.Run();
