@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import authService from "../services/authService";
 
 
@@ -8,20 +9,17 @@ const RegisterPage = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault(); // Prevents the default form submission (page reload)
         setError(null); // Clear previous errors
 
         try {
-            const response = await authService.register({
-                firstName,
-                lastName,
-                email,
-                password,
-            });
-            console.log('Registration successful:', response.data);
-            // TODO: Redirect to login page
+            await authService.register({ firstName, lastName, email, password });
+            console.log('Registration successful');
+            navigate('/login'); // Redirect to login page after successful registration
+            
         } catch (err: any) {
             console.error('Registration failed:', err.response?.data);
             setError(err.response?.data?.title || 'An error occurred during registration.');

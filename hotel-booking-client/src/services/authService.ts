@@ -1,15 +1,12 @@
-import axios from "axios";
+import apiInstance from '../api/axiosConfig';
 import type {RegisterUserDto, LoginUserDto} from '../types/auth';
 
-// TODO: Add API_URL to .env file
-const API_URL = 'http://localhost:5297/api/auth';
-
 const register = (userData: RegisterUserDto) => {
-    return axios.post(`${API_URL}/register`, userData);
+    return apiInstance.post(`/auth/register`, userData);
 };
 
 const login = (userData: LoginUserDto) => {
-    return axios.post(`${API_URL}/login`, userData);
+    return apiInstance.post(`/auth/login`, userData);
 };
 
 const authService = {

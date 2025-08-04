@@ -1,10 +1,15 @@
 import { useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import authService from "../services/authService";
+import { useAuth } from "../context/AuthContext";
 
 const LoginPage = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
+    
+    const navigate = useNavigate();
+    const { login } = useAuth();
 
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault(); // Prevents the default form submission (page reload)
@@ -12,8 +17,10 @@ const LoginPage = () => {
 
         try {
             const response = await authService.login({ email, password });
-            console.log('Login successful, token:', response.data.token);
-            // TODO: Save token and redirect to home page
+            login(response.data.token); // Use the login function from AuthContext
+            console.log('Login successful, context updated.');
+            navigate('/');
+            
         } catch (err: any) {
             console.error('Login failed:', err.response?.data);
             setError('Failed to log in. Please check your email and password.');
