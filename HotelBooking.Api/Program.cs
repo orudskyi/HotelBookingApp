@@ -10,6 +10,8 @@ using HotelBooking.Application.Interfaces;
 using HotelBooking.Infrastructure.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using HotelBooking.Infrastructure.Repositories;
+using HotelBooking.Api.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +53,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+builder.Services.AddScoped<IHotelRepository, HotelRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -129,6 +132,8 @@ app.MapPost("api/auth/login", async (UserManager<User> userManager, ITokenServic
     var token = tokenService.CreateToken(claims);
     return Results.Ok(new { Token = token });
 });
+
+app.MapHotelEndpoints();
 
 
 app.Run();
